@@ -7,25 +7,32 @@ def get_answered_questions(group_name):
     # Load the data from your Excel file
     df = pd.read_excel('wills questions.xlsx')
 
+    # Remove leading and trailing spaces from column names
+    df.columns = df.columns.str.strip()
+
+    # Change 'answers' to the correct column name in your Excel file
+    correct_column_name = 'Answers'
+    print(df.columns)
     # Remove rows with unanswered questions
-    df = df.dropna(subset=['answers'])
+    df = df.dropna(subset=[correct_column_name])
 
     # Filter the dataframe to only include rows with the given group area
-    filtered_df = df[df['group area'] == group_name]
+    filtered_df = df[df['Group Area'] == group_name]
 
     # If there are no answered questions in this group area, return None
     if filtered_df.empty:
         return None
 
     # Convert the filtered dataframe to a dictionary of the form {question: answer}
-    question_answer_dict = dict(zip(filtered_df['parent question'], filtered_df['answers']))
+    question_answer_dict = dict(zip(filtered_df['Parent Question'], filtered_df[correct_column_name]))
+
     return question_answer_dict
+
 def get_group_areas():
     # Load the data from your Excel file
     df = pd.read_excel('wills questions.xlsx')
-    
     # Get a list of unique group areas
-    group_areas = df['group area'].unique()
+    group_areas = df['Group Area'].unique()
     
     return group_areas
 
@@ -42,6 +49,10 @@ def generate_will_part(group, will_examples, questions):
     Returns:
     - A string representing the generated part of the will.
     """
+    with open('openai_api.txt', 'r') as file:
+        openai_key = file.read().strip()
+
+    openai.api_key = openai_key
     # Prepare the messages for the OpenAI GPT-3.5-turbo model
     messages = [
         {
@@ -56,7 +67,7 @@ def generate_will_part(group, will_examples, questions):
 
     # Make the API call
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4",
         messages=messages,
     )
 
@@ -64,12 +75,6 @@ def generate_will_part(group, will_examples, questions):
     generated_will_part = response['choices'][0]['message']['content'].strip()
 
     return generated_will_part
-
-
-
-# Call the function with a group name and print the result
-group_name = 'group area name'  # replace with the actual group name
-print(get_answered_questions(group_name))
 
 
 def read_will_json(file_name):
@@ -91,6 +96,5 @@ for group in group_areas:
     question_answer_dict = get_answered_questions(group)
 
     # For each will, extract the data for this group area and call generate_will_part
-    for will in wills:
-        if group in will:
-            generate_will_part(group, will[group], question_answer_dict)
+    wills_group = [w[group] for w in wills]
+    print('Group: {} \n {}'.format(group, generate_will_part(group, wills_group, question_answer_dict)))
