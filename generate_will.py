@@ -47,13 +47,11 @@ def generate_will_part(group, will_examples, questions):
         {
             "role": "system",
             "content": "You are an AI trained to assist in generating specific parts of a will document. You should use the information from user-answered questions and example wills to generate a proper and legally correct segment of a will. Your output should only cover the topics specifically mentioned in the user's answers and not include any details that were not provided by the user."
-        }
-        ,
+        },
         {
             "role": "user",
-            "content": "Generate a section of the will related to '{group}'. Use the following examples from other wills as a guide: {will_examples}. Also take into account these specific answers from the user to the questions: {questions}. Ensure that you only include details that were provided in the user's answers and do not infer or add any additional details not explicitly provided."
+            "content": f"Generate a section of the will related to '{group}'. Please consider these three example wills: Will Example 1 - '{will_examples[0]}', Will Example 2 - '{will_examples[1]}', Will Example 3 - '{will_examples[2]}'. Also, take into account these specific answers from the user to the questions: {questions}. Your task is to generate a valid will section based on these inputs, while ensuring you only include details explicitly provided in the user's answers."
         }
-
     ]
 
     # Make the API call
@@ -66,6 +64,7 @@ def generate_will_part(group, will_examples, questions):
     generated_will_part = response['choices'][0]['message']['content'].strip()
 
     return generated_will_part
+
 
 
 # Call the function with a group name and print the result
