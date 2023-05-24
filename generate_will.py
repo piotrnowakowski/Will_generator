@@ -2,6 +2,10 @@ import pandas as pd
 import json
 import openai
 import langchain
+from flask import Flask, request, jsonify, render_template
+
+app = Flask(__name__)
+
 
 def get_answered_questions(group_name):
     # Load the data from your Excel file
@@ -12,7 +16,6 @@ def get_answered_questions(group_name):
 
     # Change 'answers' to the correct column name in your Excel file
     correct_column_name = 'Answers'
-    print(df.columns)
     # Remove rows with unanswered questions
     df = df.dropna(subset=[correct_column_name])
 
@@ -97,4 +100,31 @@ for group in group_areas:
 
     # For each will, extract the data for this group area and call generate_will_part
     wills_group = [w[group] for w in wills]
-    print('Group: {} \n {}'.format(group, generate_will_part(group, wills_group, question_answer_dict)))
+
+@app.route('/')
+def home():
+    return render_template('home.html')
+
+@app.route('/generate-will-part', methods=['POST'])
+def generate_will_part_endpoint():
+    group = request.json.get('group')
+
+    # Error handling if 'group' is not provided in the request
+    if group is None:
+        return jsonify({'error': 'No group provided'}), 400
+
+    # Get the answered questions for this group
+    question_answer_dict = get_answered_questions(group)
+
+    # Read each json file and store them in a list of dictionaries
+    will_files = ['will_1.json', 'will_2.json', 'will_3.json']
+    wills = [read_will_json(file) for file in will_files]
+
+    # For each will, extract the data for this group area and call generate_will_part
+    wills_group = [w[group] for w in wills]
+    will_part = generate_will_part(group, wills_group, question_answer_dict)
+
+    return jsonify({'willPart': will_part}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)
