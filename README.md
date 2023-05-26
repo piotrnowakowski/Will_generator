@@ -9,15 +9,15 @@ The application provides a simple user interface for selecting different segment
 
 To get started, clone this repository to your local machine:
 
-    `git clone https://github.com/piotrnowakowski/Will_generator.git`
+    git clone https://github.com/piotrnowakowski/Will_generator.git
 
 Navigate into the directory:
 
-    `cd will-generation-ai`
+    cd will-generation-ai
 
 Install the required dependencies:
 
-    `pip install -r requirements.txt`
+    pip install -r requirements.txt
 
 ## Usage
 
